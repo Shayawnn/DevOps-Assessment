@@ -42,13 +42,16 @@ if you encounter any CORS policy-related error, you may need to adjust the CORS 
 
 ## Azure Pipeline <a name="azure-pipeline"></a>
 
-An Azure Pipeline has been created for automatically building Docker images for the Flask and React applications and pushing them to Docker Hub when changes are merged into the main branch.
+An Azure Pipeline has been set up to automatically build Docker images for the Flask and React applications, run Flask API tests, and push the Docker images to Docker Hub when changes are merged into the main branch. The pipeline will only proceed to the pushing stage if all tests pass.
 
-The pipeline is described in the azure-pipelines.yml file at the root of the repository. This file defines two jobs:
+The pipeline is defined in the `azure-pipelines.yml` file at the root of the repository. This file defines three jobs:
 
 1. Build: Prints a "Hello, world!" message to the console. (This is a placeholder step—you can replace it with actual build steps as needed.)
-2. Push: Logs into Docker Hub, builds Docker images for the Flask and React applications, and pushes them to Docker Hub.
+
+2. Test: Installs Python dependencies, runs tests located in the `api/tests` directory, and publishes the test results to Azure DevOps.
+
+3. Push: Logs into Docker Hub, builds Docker images for the Flask and React applications, and pushes them to Docker Hub. This step is executed only if all tests pass.
 
 The pipeline is configured to run on the latest Ubuntu virtual machine image.
 
-To configure the Docker Hub credentials, replace `$(dockerhub.username)` and `$(dockerhub.password)` in the azure-pipelines.yml file with your Docker Hub username and password. Remember to store these credentials as secrets in Azure Pipelines to avoid exposing them in your azure-pipelines.yml file.
+To configure the Docker Hub credentials, replace `$(dockerhub.username)` and `$(dockerhub.password)` in the `azure-pipelines.yml` file with your Docker Hub username and password. Remember to store these credentials as secrets in Azure Pipelines to avoid exposing them in your `azure-pipelines.yml` file.
