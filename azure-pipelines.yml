@@ -9,10 +9,35 @@ jobs:
   steps:
   - script: echo Hello, world!
     displayName: 'Run a one-line script'
+    
+- job: Test
+  displayName: 'Run Tests'
+  dependsOn: Build
+  condition: succeeded()
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.x'
+      addToPath: true
+  - script: |
+      echo Installing dependencies...
+      python -m pip install --upgrade pip
+      pip install -r ./api/requirements.txt
+      
+      echo Running tests...
+      python -m pytest ./api/tests
+    displayName: 'Install dependencies and run tests'
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testRunner: pytest
+      testResultsFiles: '**/test-results.xml'
 
 - job: Push
   displayName: 'Push'
-  dependsOn: Build
+  dependsOn: Test
   condition: succeeded()
   steps:
   - script: |
@@ -20,10 +45,10 @@ jobs:
       docker login -u $(dockerhub.username) -p $(dockerhub.password)
       
       echo Building and pushing Flask app image...
-      docker build -t shayawn/devops-assessment-app-api .
+      docker build -t shayawn/devops-assessment-app-api ./api
       docker push shayawn/devops-assessment-app-api
       
       echo Building and pushing React app image...
-      docker build -t shayawn/devops-assessment-app-frontend .
+      docker build -t shayawn/devops-assessment-app-frontend ./frontend
       docker push shayawn/devops-assessment-app-frontend
     displayName: 'Build and push Docker images'
