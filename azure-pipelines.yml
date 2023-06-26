@@ -1,0 +1,29 @@
+trigger:
+- main
+
+jobs:
+- job: Build
+  displayName: 'Build'
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+  - script: echo Hello, world!
+    displayName: 'Run a one-line script'
+
+- job: Push
+  displayName: 'Push'
+  dependsOn: Build
+  condition: succeeded()
+  steps:
+  - script: |
+      echo Logging into Docker Hub...
+      docker login -u $(dockerhub.username) -p $(dockerhub.password)
+      
+      echo Building and pushing Flask app image...
+      docker build -t shayawn/devops-assessment-app-api .
+      docker push shayawn/devops-assessment-app-api
+      
+      echo Building and pushing React app image...
+      docker build -t shayawn/devops-assessment-app-frontend .
+      docker push shayawn/devops-assessment-app-frontend
+    displayName: 'Build and push Docker images'
